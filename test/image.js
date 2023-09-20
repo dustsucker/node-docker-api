@@ -1,6 +1,6 @@
 import test from 'ava'
 import fs from 'fs'
-import { Image } from '../src/image'
+import { Image } from '../lib/image'
 import { Docker } from '../src/docker'
 
 const socket = process.env.DOCKER_SOCKET || '/var/run/docker.sock'

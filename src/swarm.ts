@@ -1,6 +1,6 @@
 'use strict'
 
-import Modem = require('docker-modem')
+import type * as Modem from 'docker-modem'
 import { Node } from './node'
 
 /**
@@ -8,7 +8,7 @@ import { Node } from './node'
  */
 export default class Swarm {
   modem: Modem
-  data: Object = {}
+  data: Record<string, unknown> = {}
 
   /**
    * Creates a new swarm
@@ -21,10 +21,10 @@ export default class Swarm {
   /**
    * Initialize a new swarm
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/initialize-a-new-swarm
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the new node
    */
-  init (opts?: Object): Promise<Node> {
+  async init (opts?: Record<string, unknown>): Promise<Node> {
     const call = {
       path: '/swarm/init?',
       method: 'POST',
@@ -36,9 +36,9 @@ export default class Swarm {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, nodeId) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         const node = new Node(this.modem, nodeId)
         resolve(node)
       })
@@ -49,12 +49,12 @@ export default class Swarm {
    * Get low-level information on a swarm
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/inspect-swarm
    * The reason why this module isn't called inspect is because that interferes with the inspect utility of node.
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the swarm
    */
-  status (opts?: Object): Promise<Swarm> {
+  async status (opts?: Record<string, unknown>): Promise<Swarm> {
     const call = {
-      path: `/swarm?`,
+      path: '/swarm?',
       method: 'GET',
       options: opts,
       statusCodes: {
@@ -64,9 +64,9 @@ export default class Swarm {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, conf) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         const swarm = new Swarm(this.modem)
         swarm.data = conf
         resolve(swarm)
@@ -77,12 +77,12 @@ export default class Swarm {
   /**
    * Join a swarm
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/join-an-existing-swarm
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the result
    */
-  join (opts?: Object): Promise<String> {
+  async join (opts?: Record<string, unknown>): Promise<string> {
     const call = {
-      path: `/swarm/join?`,
+      path: '/swarm/join?',
       method: 'POST',
       options: opts,
       statusCodes: {
@@ -92,9 +92,9 @@ export default class Swarm {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, id: string) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         resolve(id)
       })
     })
@@ -103,12 +103,12 @@ export default class Swarm {
   /**
    * Leave a swarm
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/leave-a-swarm
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the swarm
    */
-  leave (opts?: Object): Promise<String> {
+  async leave (opts?: Record<string, unknown>): Promise<string> {
     const call = {
-      path: `/swarm/leave?`,
+      path: '/swarm/leave?',
       method: 'POST',
       options: opts,
       statusCodes: {
@@ -117,9 +117,9 @@ export default class Swarm {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, res: string) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         resolve(res)
       })
     })
@@ -128,12 +128,12 @@ export default class Swarm {
   /**
    * Update a swarm
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/update-a-swarm
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the swarm
    */
-  update (opts?: Object): Promise<String> {
+  async update (opts?: Record<string, unknown>): Promise<string> {
     const call = {
-      path: `/swarm/update?`,
+      path: '/swarm/update?',
       method: 'POST',
       options: opts,
       statusCodes: {
@@ -143,9 +143,9 @@ export default class Swarm {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, res: string) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         resolve(res)
       })
     })

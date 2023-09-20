@@ -1,6 +1,6 @@
 'use strict'
 
-import Modem = require('docker-modem')
+import type * as Modem from 'docker-modem'
 
 /**
  * Class representing a secret
@@ -8,7 +8,7 @@ import Modem = require('docker-modem')
 export class Secret {
   modem: Modem
   id: string
-  data: Object = {}
+  data: Record<string, unknown> = {}
 
   /**
    * Create a secret
@@ -24,10 +24,10 @@ export class Secret {
    * Get low-level information on a secret
    * https://docs.docker.com/engine/api/v1.25/#operation/SecretInspect
    * The reason why this module isn't called inspect is because that interferes with the inspect utility of node.
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the secret
    */
-  status (opts?: Object): Promise<Secret> {
+  async status (opts?: Record<string, unknown>): Promise<Secret> {
     const call = {
       path: `/secrets/${this.id}?`,
       method: 'GET',
@@ -40,9 +40,9 @@ export class Secret {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, conf) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         const secret = new Secret(this.modem, this.id)
         secret.data = conf
         resolve(secret)
@@ -53,10 +53,10 @@ export class Secret {
   /**
    * Remove a secret
    * https://docs.docker.com/engine/api/v1.25/#operation/SecretDelete
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the result
    */
-  remove (opts?: Object): Promise<{}> {
+  async remove (opts?: Record<string, unknown>): Promise<Record<string, unknown>> {
     const call = {
       path: `/secrets/${this.id}?`,
       method: 'DELETE',
@@ -68,10 +68,10 @@ export class Secret {
       }
     }
 
-    return new Promise((resolve, reject) => {
-      this.modem.dial(call, (err) => {
-        if (err) return reject(err)
-        resolve()
+    return await new Promise((resolve, reject) => {
+      this.modem.dial(call, (err, res: Record<string, unknown>) => {
+        if (err) { reject(err); return }
+        resolve(res)
       })
     })
   }
@@ -89,7 +89,7 @@ export default class {
   }
 
   /**
-   * Get a Secret Object
+   * Get a Secret  Record<string, unknown>
    * @param  {id}         string    ID of the secret
    * @return {Secret}
    */
@@ -100,10 +100,10 @@ export default class {
   /**
    * Get the list of secrets
    * https://docs.docker.com/engine/api/v1.25/#operation/SecretList
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise returning the result as a list of secrets
    */
-  list (opts?: Object): Promise<Array<Secret>> {
+  async list (opts?: Record<string, unknown>): Promise<Secret[]> {
     const call = {
       path: '/secrets',
       method: 'GET',
@@ -114,10 +114,10 @@ export default class {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, result) => {
-        if (err) return reject(err)
-        if (!result.length) return resolve([])
+        if (err) { reject(err); return }
+        if (!result.length) { resolve([]); return }
         resolve(result.map((conf) => {
           const secret = new Secret(this.modem, conf.Name)
           secret.data = conf
@@ -130,10 +130,10 @@ export default class {
   /**
    * Create a secret
    * https://docs.docker.com/engine/api/v1.25/#operation/SecretCreate
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the new secret
    */
-  create (opts?: Object): Promise<Secret> {
+  async create (opts?: Record<string, unknown>): Promise<Secret> {
     const call = {
       path: '/secrets/create?',
       method: 'POST',
@@ -141,14 +141,14 @@ export default class {
       statusCodes: {
         201: true,
         406: 'server error or node is not part of a swarm',
-        409: '409 name conflicts with an existing Object',
+        409: '409 name conflicts with an existing  Record<string, unknown>',
         500: 'server error'
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, conf) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         const secret = new Secret(this.modem, conf.ID)
         secret.data = conf
         resolve(secret)

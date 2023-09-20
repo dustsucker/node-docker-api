@@ -1,6 +1,6 @@
 'use strict'
 
-import Modem = require('docker-modem')
+import type * as Modem from 'docker-modem'
 
 /**
  * Class representing a volume
@@ -8,7 +8,7 @@ import Modem = require('docker-modem')
 export class Volume {
   modem: Modem
   id: string
-  data: Object = {}
+  data: Record<string, unknown> = {}
 
   /**
    * Create a volume
@@ -24,11 +24,11 @@ export class Volume {
    * Get low-level information on a volume
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/inspect-a-volume
    * The reason why this module isn't called inspect is because that interferes with the inspect utility of node.
-   * @param  {Object}   opts  Query params in the request (optional)
-   * @param  {String}   id    ID of the volume to inspect, if it's not set, use the id of the Object (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
+   * @param  {String}   id    ID of the volume to inspect, if it's not set, use the id of the  Record<string, unknown> (optional)
    * @return {Promise}        Promise return the volume
    */
-  status (opts?: Object): Promise<Volume> {
+  async status (opts?: Record<string, unknown>): Promise<Volume> {
     const call = {
       path: `/volumes/${this.id}?`,
       method: 'GET',
@@ -40,9 +40,9 @@ export class Volume {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, conf) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         const volume = new Volume(this.modem, this.id)
         volume.data = conf
         resolve(volume)
@@ -53,11 +53,11 @@ export class Volume {
   /**
    * Remove a volume from the filesystem
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/remove-a-volume
-   * @param  {Object}   opts  Query params in the request (optional)
-   * @param  {String}   id    ID of the volume to inspect, if it's not set, use the id of the Object (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
+   * @param  {String}   id    ID of the volume to inspect, if it's not set, use the id of the  Record<string, unknown> (optional)
    * @return {Promise}        Promise return the result
    */
-  remove (opts?: Object): Promise<{}> {
+  async remove (opts?: Record<string, unknown>): Promise<Record<string, unknown>> {
     const call = {
       path: `/volumes/${this.id}?`,
       method: 'DELETE',
@@ -70,10 +70,10 @@ export class Volume {
       }
     }
 
-    return new Promise((resolve, reject) => {
-      this.modem.dial(call, (err) => {
-        if (err) return reject(err)
-        resolve()
+    return await new Promise((resolve, reject) => {
+      this.modem.dial(call, (err, res: Record<string, unknown>) => {
+        if (err) { reject(err); return }
+        resolve(res)
       })
     })
   }
@@ -92,7 +92,7 @@ export default class {
   }
 
   /**
-   * Get a Volume Object
+   * Get a Volume  Record<string, unknown>
    * @param  {id}         String    ID of the secret
    * @return {Volume}
    */
@@ -103,10 +103,10 @@ export default class {
   /**
    * Get the list of volumes
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/list-volumes
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise returning the result as a list of volumes
    */
-  list (opts?: Object): Promise<Array<Volume>> {
+  async list (opts?: Record<string, unknown>): Promise<Volume[]> {
     const call = {
       path: '/volumes',
       method: 'GET',
@@ -117,10 +117,10 @@ export default class {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, result) => {
-        if (err) return reject(err)
-        if (!result.Volumes || !result.Volumes.length) return resolve([])
+        if (err) { reject(err); return }
+        if (!result.Volumes?.length) { resolve([]); return }
         resolve(result.Volumes.map((conf) => {
           const volume = new Volume(this.modem, conf.Name)
           volume.data = conf
@@ -133,10 +133,10 @@ export default class {
   /**
    * Create a volume
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/create-a-volume
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the new volume
    */
-  create (opts?: Object): Promise<Volume> {
+  async create (opts?: Record<string, unknown>): Promise<Volume> {
     const call = {
       path: '/volumes/create?',
       method: 'POST',
@@ -147,11 +147,10 @@ export default class {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, conf) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         const volume = new Volume(this.modem, conf.Name)
-        volume.data
         resolve(volume)
       })
     })
@@ -160,12 +159,12 @@ export default class {
   /**
    * Prune volumes
    * https://docs.docker.com/engine/api/v1.25/#operation/VolumePrune
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}          Promise returning the container
    */
-  prune (opts?: Object): Promise<Object> {
+  async prune (opts?: Record<string, unknown>): Promise< Record<string, unknown>> {
     const call = {
-      path: `/volumes/prune`,
+      path: '/volumes/prune',
       method: 'POST',
       options: opts,
       statusCodes: {
@@ -174,9 +173,9 @@ export default class {
       }
     }
 
-    return new Promise((resolve, reject) => {
-      this.modem.dial(call, (err, res: Object) => {
-        if (err) return reject(err)
+    return await new Promise((resolve, reject) => {
+      this.modem.dial(call, (err, res: Record<string, unknown>) => {
+        if (err) { reject(err); return }
         resolve(res)
       })
     })

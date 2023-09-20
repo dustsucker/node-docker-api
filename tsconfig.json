@@ -1,11 +1,18 @@
 {
-	"compilerOptions": {
-    "module": "commonjs",
+  "compilerOptions": {
+    "module": "ESNext",
     "target": "es6",
     "sourceMap": true,
     "declaration": true,
-    "types": ["node"],
-    "removeComments": false
+    "types": [
+      "node"
+    ],
+    "removeComments": false,
+    "strictNullChecks": true,
+    "outDir": "./lib",
+    "moduleResolution": "node"
   },
-  "include": ["src/**/*.ts"]
+  "include": [
+    "src/**/*.ts"
+  ]
 }

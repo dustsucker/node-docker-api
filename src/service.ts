@@ -1,6 +1,6 @@
 'use strict'
 
-import Modem = require('docker-modem')
+import type * as Modem from 'docker-modem'
 
 /**
  * Class representing a service
@@ -8,7 +8,7 @@ import Modem = require('docker-modem')
 export class Service {
   modem: Modem
   id: string
-  data: Object = {}
+  data: Record<string, unknown> = {}
 
   /**
    * Create a service
@@ -23,11 +23,11 @@ export class Service {
   /**
    * Update a service
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/update-a-service
-   * @param  {Object}   opts  Query params in the request (optional)
-   * @param  {Object}   auth  Authentication (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   auth  Authentication (optional)
    * @return {Promise}        Promise return the new service
    */
-  update (opts?: Object, auth?: Object): Promise<Service> {
+  async update (opts?: Record<string, unknown>, auth?: Record<string, unknown>): Promise<Service> {
     const call = {
       path: `/services/${this.id}/update?`,
       method: 'POST',
@@ -40,9 +40,9 @@ export class Service {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, conf) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         const service = new Service(this.modem, this.id)
         service.data = conf
         resolve(service)
@@ -54,10 +54,10 @@ export class Service {
    * Get low-level information on a service
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/inspect-one-or-more-services
    * The reason why this module isn't called inspect is because that interferes with the inspect utility of service.
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the service
    */
-  status (opts?: Object): Promise<Service> {
+  async status (opts?: Record<string, unknown>): Promise<Service> {
     const call = {
       path: `/services/${this.id}?`,
       method: 'GET',
@@ -69,9 +69,9 @@ export class Service {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, conf) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         const service = new Service(this.modem, this.id)
         service.data = conf
         resolve(service)
@@ -82,10 +82,10 @@ export class Service {
   /**
    * Remove a service
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/remove-a-service
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the result
    */
-  remove (opts?: Object): Promise<String> {
+  async remove (opts?: Record<string, unknown>): Promise<string> {
     const call = {
       path: `/services/${this.id}?`,
       method: 'DELETE',
@@ -97,9 +97,9 @@ export class Service {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, res: string) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         resolve(res)
       })
     })
@@ -108,10 +108,10 @@ export class Service {
   /**
    * Logs of a service
    * https://docs.docker.com/engine/api/v1.27/#operation/ServiceLogs
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the result
    */
-  logs (opts?: Object): Promise<String> {
+  async logs (opts?: Record<string, unknown>): Promise<string> {
     const call = {
       path: `/services/${this.id}/logs?`,
       method: 'GET',
@@ -127,9 +127,9 @@ export class Service {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, logs) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         resolve(logs)
       })
     })
@@ -148,7 +148,7 @@ export default class {
   }
 
   /**
-   * Get a Service Object
+   * Get a Service  Record<string, unknown>
    * @param  {id}         string    ID of the secret
    * @return {Network}
    */
@@ -159,11 +159,11 @@ export default class {
   /**
    * Create a service
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/create-a-service
-   * @param  {Object}   opts  Query params in the request (optional)
-   * @param  {Object}   auth  Authentication (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   auth  Authentication (optional)
    * @return {Promise}        Promise return the new service
    */
-  create (opts?: Object, auth?: Object): Promise<Service> {
+  async create (opts?: Record<string, unknown>, auth?: Record<string, unknown>): Promise<Service> {
     const call = {
       path: '/services/create?',
       method: 'POST',
@@ -176,9 +176,9 @@ export default class {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, conf) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         const service = new Service(this.modem, conf.ID)
         service.data = conf
         resolve(service)
@@ -189,10 +189,10 @@ export default class {
   /**
    * Get the list of services
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/list-services
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise returning the result as a list of services
    */
-  list (opts?: Object): Promise<Array<Service>> {
+  async list (opts?: Record<string, unknown>): Promise<Service[]> {
     const call = {
       path: '/services?',
       method: 'GET',
@@ -203,9 +203,9 @@ export default class {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, result) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         resolve(result.map((conf) => {
           const service = new Service(this.modem, conf.ID)
           service.data = conf

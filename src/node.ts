@@ -1,6 +1,6 @@
 'use strict'
 
-import Modem = require('docker-modem')
+import type * as Modem from 'docker-modem'
 
 /**
  * Class representing a node
@@ -8,7 +8,7 @@ import Modem = require('docker-modem')
 export class Node {
   modem: Modem
   id: string
-  data: Object = {}
+  data: Record<string, unknown> = {}
 
   /**
    * Create a node
@@ -23,10 +23,10 @@ export class Node {
   /**
    * Update a node
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/update-a-node
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the new node
    */
-  update (opts?: Object): Promise<Node> {
+  async update (opts?: Record<string, unknown>): Promise<Node> {
     const call = {
       path: `/nodes/${this.id}/update?`,
       method: 'POST',
@@ -38,9 +38,9 @@ export class Node {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, conf) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         const node = new Node(this.modem, this.id)
         node.data = conf
         resolve(node)
@@ -52,10 +52,10 @@ export class Node {
    * Get low-level information on a node
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/inspect-a-node
    * The reason why this module isn't called inspect is because that interferes with the inspect utility of node.
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the node
    */
-  status (opts?: Object) {
+  async status (opts?: Record<string, unknown>): Promise<Node> {
     const call = {
       path: `/nodes/${this.id}?`,
       method: 'GET',
@@ -67,9 +67,9 @@ export class Node {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, conf) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         const node = new Node(this.modem, this.id)
         node.data = conf
         resolve(node)
@@ -80,10 +80,10 @@ export class Node {
   /**
    * Remove a node
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/remove-a-node
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the result
    */
-  remove (opts: Object): Promise<{}> {
+  async remove (opts: Record<string, unknown>): Promise<Record<string, unknown>> {
     const call = {
       path: `/nodes/${this.id}?`,
       method: 'DELETE',
@@ -95,10 +95,10 @@ export class Node {
       }
     }
 
-    return new Promise((resolve, reject) => {
-      this.modem.dial(call, (err) => {
-        if (err) return reject(err)
-        resolve()
+    return await new Promise((resolve, reject) => {
+      this.modem.dial(call, (err, res: Record<string, unknown>) => {
+        if (err) { reject(err); return }
+        resolve(res)
       })
     })
   }
@@ -116,7 +116,7 @@ export default class {
   }
 
   /**
-   * Get a Node Object
+   * Get a Node  Record<string, unknown>
    * @param  {id}         string    ID of the secret
    * @return {Node}
    */
@@ -127,10 +127,10 @@ export default class {
   /**
    * Get the list of nodes
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/list-nodes
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise returning the result as a list of nodes
    */
-  list (opts?: Object): Promise<Array<Node>> {
+  async list (opts?: Record<string, unknown>): Promise<Node[]> {
     const call = {
       path: '/nodes?',
       method: 'GET',
@@ -141,10 +141,10 @@ export default class {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, result) => {
-        if (err) return reject(err)
-        if (!result || !result.length) return resolve([])
+        if (err) { reject(err); return }
+        if (!result?.length) { resolve([]); return }
         resolve(result.map((conf) => {
           const node = new Node(this.modem, conf.ID)
           node.data = conf

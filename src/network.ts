@@ -1,6 +1,6 @@
 'use strict'
 
-import Modem = require('docker-modem')
+import type * as Modem from 'docker-modem'
 
 /**
  * Class reprensenting a network
@@ -8,7 +8,7 @@ import Modem = require('docker-modem')
 export class Network {
   modem: Modem
   id: string
-  data: Object = {}
+  data: Record<string, unknown> = {}
 
   /**
    * Creates a new network
@@ -24,10 +24,10 @@ export class Network {
    * Get low-level information on a network
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/inspect-network
    * The reason why this module isn't called inspect is because that interferes with the inspect utility of node.
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the network
    */
-  status (opts?: Object) {
+  async status (opts?: Record<string, unknown>): Promise<Network> {
     const call = {
       path: `/networks/${this.id}?`,
       method: 'GET',
@@ -39,9 +39,9 @@ export class Network {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, conf) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         const network = new Network(this.modem, this.id)
         network.data = conf
         resolve(network)
@@ -52,10 +52,10 @@ export class Network {
   /**
    * Remove a network
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/remove-a-network
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the result
    */
-  remove (opts?: Object): Promise<{}> {
+  async remove (opts?: Record<string, unknown>): Promise<Record<string, unknown>> {
     const call = {
       path: `/networks/${this.id}?`,
       method: 'DELETE',
@@ -67,10 +67,10 @@ export class Network {
       }
     }
 
-    return new Promise((resolve, reject) => {
-      this.modem.dial(call, (err) => {
-        if (err) return reject(err)
-        resolve()
+    return await new Promise((resolve, reject) => {
+      this.modem.dial(call, (err, res: Record<string, unknown>) => {
+        if (err) { reject(err); return }
+        resolve(res)
       })
     })
   }
@@ -78,10 +78,10 @@ export class Network {
   /**
    * Connect a container into the network
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/connect-a-container-to-a-network
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the network
    */
-  connect (opts?: Object) {
+  async connect (opts?: Record<string, unknown>): Promise<Network> {
     const call = {
       path: `/networks/${this.id}/connect?`,
       method: 'POST',
@@ -94,9 +94,9 @@ export class Network {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, conf) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         const network = new Network(this.modem, this.id)
         network.data = conf
         resolve(network)
@@ -107,10 +107,10 @@ export class Network {
   /**
    * Disonnect a container into the network
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/disconnect-a-container-from-a-network
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the network
    */
-  disconnect (opts?: Object): Promise<Network> {
+  async disconnect (opts?: Record<string, unknown>): Promise<Network> {
     const call = {
       path: `/networks/${this.id}/disconnect?`,
       method: 'POST',
@@ -123,9 +123,9 @@ export class Network {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, conf) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         const network = new Network(this.modem, this.id)
         network.data = conf
         resolve(network)
@@ -142,7 +142,7 @@ export default class {
   }
 
   /**
-   * Get a Network Object
+   * Get a Network  Record<string, unknown>
    * @param  {id}         string    ID of the secret
    * @return {Network}
    */
@@ -153,10 +153,10 @@ export default class {
   /**
    * Get the list of networks
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/list-networks
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise returning the result as a list of networks
    */
-  list (opts?: Object): Promise<Array<Network>> {
+  async list (opts?: Record<string, unknown>): Promise<Network[]> {
     const call = {
       path: '/networks?',
       method: 'GET',
@@ -167,10 +167,10 @@ export default class {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, networks) => {
-        if (err) return reject(err)
-        if (!networks || !networks.length) return resolve([])
+        if (err) { reject(err); return }
+        if (!networks?.length) { resolve([]); return }
         resolve(networks.map((conf) => {
           const network = new Network(this.modem, conf.Id)
           network.data = conf
@@ -183,10 +183,10 @@ export default class {
   /**
    * Create a network
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/create-a-network
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise return the new network
    */
-  create (opts?: Object): Promise<Network> {
+  async create (opts?: Record<string, unknown>): Promise<Network> {
     const call = {
       path: '/networks/create?',
       method: 'POST',
@@ -198,9 +198,9 @@ export default class {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, conf) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         const network = new Network(this.modem, conf.Id)
         network.data = conf
         resolve(network)
@@ -211,12 +211,12 @@ export default class {
   /**
    * Prune network
    * https://docs.docker.com/engine/api/v1.25/#operation/NetworkPrune
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}          Promise returning the container
    */
-  prune (opts?: Object): Promise<Object> {
+  async prune (opts?: Record<string, unknown>): Promise<Record<string, unknown>> {
     const call = {
-      path: `/networks/prune`,
+      path: '/networks/prune',
       method: 'POST',
       options: opts,
       statusCodes: {
@@ -225,9 +225,9 @@ export default class {
       }
     }
 
-    return new Promise((resolve, reject) => {
-      this.modem.dial(call, (err, res: Object) => {
-        if (err) return reject(err)
+    return await new Promise((resolve, reject) => {
+      this.modem.dial(call, (err, res: Record<string, unknown>) => {
+        if (err) { reject(err); return }
         resolve(res)
       })
     })

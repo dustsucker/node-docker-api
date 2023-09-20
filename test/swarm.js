@@ -1,10 +1,10 @@
 import test from 'ava'
 import fs from 'fs'
-import { Node } from '../src/node'
-import { Secret } from '../src/secret'
-import { Service } from '../src/service'
-import Swarm from '../src/swarm'
-import { Docker } from '../src/docker'
+import { Node } from '../src/node.ts'
+import { Secret } from '../src/secret.ts'
+import { Service } from '../src/service.ts'
+import Swarm from '../src/swarm.ts'
+import { Docker } from '../src/docker.ts'
 
 const socket = process.env.DOCKER_SOCKET || '/var/run/docker.sock'
 const isSocket = fs.existsSync(socket) ? fs.statSync(socket).isSocket() : false

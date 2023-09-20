@@ -1,6 +1,6 @@
 'use strict'
 
-import Modem = require('docker-modem')
+import * as Modem from 'docker-modem'
 import ContainerManager from './container'
 import ImageManager from './image'
 import VolumeManager from './volume'
@@ -29,8 +29,8 @@ export class Docker {
   task: TaskManager
 
   /**
-   * Creates the Docker Object
-   * @param {Object}  opts Docker options
+   * Creates the Docker  Record<string, unknown>
+   * @param { Record<string, unknown>}  opts Docker options
    */
   constructor (opts) {
     this.modem = new Modem(opts)
@@ -51,10 +51,10 @@ export class Docker {
    * Validate credentials for a registry and get identity token,
    * if available, for accessing the registry without password
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/check-auth-configuration
-   * @param  {Object}   opts  Auth options
+   * @param  { Record<string, unknown>}   opts  Auth options
    * @return {Promise}        Promise returning the result
    */
-  auth (opts: Object): Promise<Object> {
+  async auth (opts: Record<string, unknown>): Promise< Record<string, unknown>> {
     const call = {
       path: '/auth?',
       method: 'POST',
@@ -66,9 +66,9 @@ export class Docker {
       }
     }
 
-    return new Promise((resolve, reject) => {
-      this.modem.dial(call, (err, data: Object) => {
-        if (err) return reject(err)
+    return await new Promise((resolve, reject) => {
+      this.modem.dial(call, (err, data: Record<string, unknown>) => {
+        if (err) { reject(err); return }
         resolve(data)
       })
     })
@@ -79,7 +79,7 @@ export class Docker {
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-system-wide-information
    * @return {Promise}        Promise returning the result
    */
-  info (): Promise<Object> {
+  async info (): Promise< Record<string, unknown>> {
     const call = {
       path: '/info?',
       method: 'GET',
@@ -89,9 +89,9 @@ export class Docker {
       }
     }
 
-    return new Promise((resolve, reject) => {
-      this.modem.dial(call, (err, data: Object) => {
-        if (err) return reject(err)
+    return await new Promise((resolve, reject) => {
+      this.modem.dial(call, (err, data: Record<string, unknown>) => {
+        if (err) { reject(err); return }
         resolve(data)
       })
     })
@@ -102,7 +102,7 @@ export class Docker {
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/show-the-docker-version-information
    * @return {Promise}        Promise returning the result
    */
-  version (): Promise<Object> {
+  async version (): Promise< Record<string, unknown>> {
     const call = {
       path: '/version?',
       method: 'GET',
@@ -112,9 +112,9 @@ export class Docker {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, data) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         resolve(data)
       })
     })
@@ -125,7 +125,7 @@ export class Docker {
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/ping-the-docker-server
    * @return {Promise}        Promise returning the result
    */
-  ping (): Promise<String> {
+  async ping (): Promise<string> {
     const call = {
       path: '/_ping?',
       method: 'GET',
@@ -135,9 +135,9 @@ export class Docker {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, data: string) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         resolve(data)
       })
     })
@@ -146,10 +146,10 @@ export class Docker {
   /**
    * Get container events from docker, can be in real time via streaming or via polling (with since)
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/monitor-docker-s-events
-   * @param  {Object}   opts  Options to send with the request (optional)
+   * @param  { Record<string, unknown>}   opts  Options to send with the request (optional)
    * @return {Promise}        Promise returning the result
    */
-  events (opts: Object = {}): Promise<Object> {
+  async events (opts: Record<string, unknown> = {}): Promise< Record<string, unknown>> {
     const call = {
       path: '/events?',
       method: 'GET',
@@ -161,9 +161,9 @@ export class Docker {
       }
     }
 
-    return new Promise((resolve, reject) => {
-      this.modem.dial(call, (err, data: Object) => {
-        if (err) return reject(err)
+    return await new Promise((resolve, reject) => {
+      this.modem.dial(call, (err, data: Record<string, unknown>) => {
+        if (err) { reject(err); return }
         resolve(data)
       })
     })

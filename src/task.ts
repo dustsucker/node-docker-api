@@ -1,6 +1,6 @@
 'use strict'
 
-import Modem = require('docker-modem')
+import type * as Modem from 'docker-modem'
 
 /**
  * Class representing a task
@@ -8,7 +8,7 @@ import Modem = require('docker-modem')
 export class Task {
   modem: Modem
   id: string
-  data: Object = {}
+  data: Record<string, unknown> = {}
 
   /**
    * Create a task
@@ -24,11 +24,11 @@ export class Task {
    * Get low-level information on a task
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/inspect-a-task
    * The reason why this module isn't called inspect is because that interferes with the inspect utility of task.
-   * @param  {Object}   opts  Query params in the request (optional)
-   * @param  {String}   id    ID of the task to inspect, if it's not set, use the id of the Object (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
+   * @param  {String}   id    ID of the task to inspect, if it's not set, use the id of the  Record<string, unknown> (optional)
    * @return {Promise}        Promise return the task
    */
-  status (opts?: Object) {
+  async status (opts?: Record<string, unknown>): Promise<any> {
     const call = {
       path: `/tasks/${this.id}?`,
       method: 'GET',
@@ -40,9 +40,9 @@ export class Task {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, conf) => {
-        if (err) return reject(err)
+        if (err) { reject(err); return }
         const task = new Task(this.modem, this.id)
         task.data = conf
         resolve(task)
@@ -64,7 +64,7 @@ export default class {
   }
 
   /**
-   * Get a Task Object
+   * Get a Task  Record<string, unknown>
    * @param  {id}         string    ID of the secret
    * @return {Task}
    */
@@ -75,10 +75,10 @@ export default class {
   /**
    * Get the list of tasks
    * https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/list-tasks
-   * @param  {Object}   opts  Query params in the request (optional)
+   * @param  { Record<string, unknown>}   opts  Query params in the request (optional)
    * @return {Promise}        Promise returning the result as a list of tasks
    */
-  list (opts?: Object): Promise<Array<Task>> {
+  async list (opts?: Record<string, unknown>): Promise<Task[]> {
     const call = {
       path: '/tasks?',
       method: 'GET',
@@ -89,10 +89,10 @@ export default class {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.modem.dial(call, (err, result) => {
-        if (err) return reject(err)
-        if (!result || !result.length) return resolve([])
+        if (err) { reject(err); return }
+        if (!result?.length) { resolve([]); return }
         resolve(result.map((conf) => {
           const task = new Task(this.modem, conf.ID)
           task.data = conf
